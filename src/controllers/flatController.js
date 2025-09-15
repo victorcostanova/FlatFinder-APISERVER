@@ -1,9 +1,12 @@
-const Flat = require('../models/Flat');
+const Flat = require("../models/Flat");
 
 // Get all flats
 const getAllFlats = async (req, res) => {
   try {
-    const flats = await Flat.find().populate('owner', 'firstName lastName email');
+    const flats = await Flat.find().populate(
+      "owner",
+      "firstName lastName email"
+    );
     res.json(flats);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -13,9 +16,12 @@ const getAllFlats = async (req, res) => {
 // Get flat by ID
 const getFlatById = async (req, res) => {
   try {
-    const flat = await Flat.findById(req.params.id).populate('owner', 'firstName lastName email');
+    const flat = await Flat.findById(req.params.id).populate(
+      "owner",
+      "firstName lastName email"
+    );
     if (!flat) {
-      return res.status(404).json({ message: 'Flat not found' });
+      return res.status(404).json({ message: "Flat not found" });
     }
     res.json(flat);
   } catch (error) {
@@ -34,7 +40,7 @@ const addFlat = async (req, res) => {
       hasAc,
       yearBuilt,
       rentPrice,
-      dateAvailable
+      dateAvailable,
     } = req.body;
 
     const flat = new Flat({
@@ -46,11 +52,14 @@ const addFlat = async (req, res) => {
       yearBuilt,
       rentPrice,
       dateAvailable,
-      owner: req.user._id
+      owner: req.user._id,
     });
 
     const savedFlat = await flat.save();
-    const populatedFlat = await Flat.findById(savedFlat._id).populate('owner', 'firstName lastName email');
+    const populatedFlat = await Flat.findById(savedFlat._id).populate(
+      "owner",
+      "firstName lastName email"
+    );
 
     res.status(201).json(populatedFlat);
   } catch (error) {
@@ -65,12 +74,17 @@ const updateFlat = async (req, res) => {
     const flat = await Flat.findById(flatId);
 
     if (!flat) {
-      return res.status(404).json({ message: 'Flat not found' });
+      return res.status(404).json({ message: "Flat not found" });
     }
 
-    // Check if user is the owner of the flat
-    if (flat.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Access denied. You can only update your own flats.' });
+    // Check if user is the owner of the flat or an admin
+    if (
+      flat.owner.toString() !== req.user._id.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res.status(403).json({
+        message: "Access denied. You can only update your own flats.",
+      });
     }
 
     const {
@@ -81,7 +95,7 @@ const updateFlat = async (req, res) => {
       hasAc,
       yearBuilt,
       rentPrice,
-      dateAvailable
+      dateAvailable,
     } = req.body;
 
     const updateData = {};
@@ -94,11 +108,10 @@ const updateFlat = async (req, res) => {
     if (rentPrice !== undefined) updateData.rentPrice = rentPrice;
     if (dateAvailable !== undefined) updateData.dateAvailable = dateAvailable;
 
-    const updatedFlat = await Flat.findByIdAndUpdate(
-      flatId,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate('owner', 'firstName lastName email');
+    const updatedFlat = await Flat.findByIdAndUpdate(flatId, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate("owner", "firstName lastName email");
 
     res.json(updatedFlat);
   } catch (error) {
@@ -113,16 +126,21 @@ const deleteFlat = async (req, res) => {
     const flat = await Flat.findById(flatId);
 
     if (!flat) {
-      return res.status(404).json({ message: 'Flat not found' });
+      return res.status(404).json({ message: "Flat not found" });
     }
 
-    // Check if user is the owner of the flat
-    if (flat.owner.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Access denied. You can only delete your own flats.' });
+    // Check if user is the owner of the flat or an admin
+    if (
+      flat.owner.toString() !== req.user._id.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res.status(403).json({
+        message: "Access denied. You can only delete your own flats.",
+      });
     }
 
     await Flat.findByIdAndDelete(flatId);
-    res.json({ message: 'Flat deleted successfully' });
+    res.json({ message: "Flat deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -133,5 +151,5 @@ module.exports = {
   getFlatById,
   addFlat,
   updateFlat,
-  deleteFlat
+  deleteFlat,
 };

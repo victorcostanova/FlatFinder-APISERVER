@@ -1,8 +1,8 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 };
 
 // Register user
@@ -13,7 +13,9 @@ const register = async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists with this email' });
+      return res
+        .status(400)
+        .json({ message: "User already exists with this email" });
     }
 
     // Create new user
@@ -22,7 +24,7 @@ const register = async (req, res) => {
       password,
       firstName,
       lastName,
-      birthDate
+      birthDate,
     });
 
     await user.save();
@@ -31,9 +33,9 @@ const register = async (req, res) => {
     const token = generateToken(user._id);
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: "User registered successfully",
       token,
-      user
+      user,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -48,22 +50,22 @@ const login = async (req, res) => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     // Generate token
     const token = generateToken(user._id);
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
-      user
+      user,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,7 +75,7 @@ const login = async (req, res) => {
 // Get all users (admin only)
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().populate('favouriteFlats');
+    const users = await User.find().populate("favouriteFlats");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,9 +85,9 @@ const getAllUsers = async (req, res) => {
 // Get user by ID
 const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).populate('favouriteFlats');
+    const user = await User.findById(req.params.id).populate("favouriteFlats");
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.json(user);
   } catch (error) {
@@ -107,14 +109,13 @@ const updateUser = async (req, res) => {
     if (birthDate) updateData.birthDate = birthDate;
     if (favouriteFlats) updateData.favouriteFlats = favouriteFlats;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate('favouriteFlats');
+    const user = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate("favouriteFlats");
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(user);
@@ -130,10 +131,10 @@ const deleteUser = async (req, res) => {
 
     const user = await User.findByIdAndDelete(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: 'User deleted successfully' });
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -145,5 +146,5 @@ module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
 };
