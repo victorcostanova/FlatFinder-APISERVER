@@ -1,5 +1,6 @@
 # FlatFinder API
 
+Victor Costa Nova | Jose Antonio Ceda Ocejo
 A REST API server for a flat finding application built with Node.js, Express, and MongoDB.
 
 ## Technologies
